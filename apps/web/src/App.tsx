@@ -3,9 +3,10 @@ import POS from "./POS"
 import Services from "./pages/Services"
 import Dashboard from "./pages/Dashboard"
 import { useApiStatus } from "./hooks/useApiStatus"   // < relative import
+import Orders from "./pages/Orders" 
 
 export default function App() {
-  const [page, setPage] = useState<"dashboard" | "services" | "pos">("dashboard")
+  const [page, setPage] = useState<"dashboard" | "services" | "pos" | "orders">("dashboard")
   const apiStatus = useApiStatus(4000)
   const statusClass =
     apiStatus === "ok" ? "text-green-600" :
@@ -29,13 +30,20 @@ export default function App() {
               className={`rounded-md px-3 py-1.5 ${page === "pos" ? "bg-gray-900 text-white" : "hover:bg-gray-100"}`}>
               POS
             </button>
+            <button onClick={() => setPage("orders")}
+              className={`rounded-md px-3 py-1.5 ${page === "orders" ? "bg-gray-900 text-white" : "hover:bg-gray-100"}`}>
+              Orders
+            </button>
           </nav>
           <span className={`text-sm ${statusClass}`}>API: {apiStatus}</span>
         </div>
       </header>
 
       <main className="mx-auto max-w-6xl p-4">
-        {page === "dashboard" ? <Dashboard /> : page === "services" ? <Services /> : <POS />}
+        {page === "dashboard" ? <Dashboard /> :
+        page === "services" ? <Services /> :
+        page === "pos" ? <POS /> :
+        <Orders />}      
       </main>
     </div>
   )
