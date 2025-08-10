@@ -1,3 +1,42 @@
-﻿.vscode/
-apps/api/.venv/
+﻿@'
+# Python
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+.venv/
+.env
+.env.*.local
+
+# Node
+node_modules/
+dist/
+.vite/
+*.log
+
+# OS/IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Project artifacts
+apps/api/laundryos.db
+coverage/
+'@ | Out-File -Encoding UTF8 .gitignore
+
+# env example for API
+@'
+# API
+DATABASE_URL=sqlite:///./apps/api/laundryos.db
+CORS_ORIGINS=http://127.0.0.1:5173,http://127.0.0.1:5174,http://127.0.0.1:5175
+
+# M-Pesa sandbox (we'll use later)
+MPESA_ENV=sandbox
+MPESA_CONSUMER_KEY=
+MPESA_CONSUMER_SECRET=
+MPESA_SHORTCODE=174379
+MPESA_PASSKEY=
+MPESA_CALLBACK_URL=
+'@ | Out-File -Encoding UTF8 .env.example
