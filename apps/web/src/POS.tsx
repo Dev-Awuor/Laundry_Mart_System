@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
+import { createOrder } from "./lib/orders"
 
 type Service = { id: number; name: string; category: string; base_price: number; unit: string; is_active: boolean }
 type CartLine = { id: number; name: string; price: number; qty: number }
@@ -10,6 +11,7 @@ export default function POS() {
   const [services, setServices] = useState<Service[]>([])
   const [cart, setCart] = useState<CartLine[]>([])
   const [discount, setDiscount] = useState<number>(0)
+  const [paying, setPaying] = useState(false) 
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/services")
@@ -41,11 +43,31 @@ export default function POS() {
     return { subtotal, discount: safeDiscount, taxable, vat, total }
   }, [cart, discount])
 
-  function mockPay() {
-    if (cart.length === 0) return
-    alert(`Receipt total: KSh ${kes.format(totals.total)} (VAT 16%: KSh ${kes.format(totals.vat)})`)
-    setCart([])
-    setDiscount(0)
+  async function handlePay() {
+    if (cart.length === 0 || paying) return
+    setPaying(true)
+    try {
+      const items = cart.map((l) => ({ service_id: l.id, qty: l.qty }))
+      const order = await createOrder({
+        customer_name: "Walk-in",
+        discount: totals.discount,
+        items,
+      })
+      alert(
+        `Order #${order.id} created.\n` +
+          `Subtotal: KSh ${kes.format(order.subtotal)}\n` +
+          `Discount: KSh ${kes.format(order.discount)}\n` +
+          `Taxable: KSh ${kes.format(order.taxable)}\n` +
+          `VAT 16%: KSh ${kes.format(order.vat)}\n` +
+          `Total: KSh ${kes.format(order.total)}`
+      )
+      setCart([])
+      setDiscount(0)
+    } catch (e: any) {
+      alert(e?.message || "Payment failed")
+    } finally {
+      setPaying(false)
+    }
   }
 
   return (
@@ -149,13 +171,14 @@ export default function POS() {
             <span>KSh {kes.format(totals.total)}</span>
           </div>
 
-          <button
-            onClick={mockPay}
-            disabled={cart.length === 0}
-            className="mt-3 w-full rounded-md bg-gray-900 px-4 py-2 text-white hover:opacity-90 disabled:opacity-50"
-          >
-            Pay (mock)
-          </button>
+<button
+  onClick={handlePay}
+  disabled={cart.length === 0 || paying}
+  className="mt-3 w-full rounded-md bg-gray-900 px-4 py-2 text-white hover:opacity-90 disabled:opacity-50"
+>
+  {paying ? "Processing…" : "Pay"}
+</button>
+
         </div>
       </div>
     </div>
