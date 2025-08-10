@@ -2,6 +2,8 @@
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import List
+from .db import Base, engine
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Laundry OS API", version="0.0.1")
 
@@ -56,3 +58,33 @@ def delete_service(service_id: int):
         raise HTTPException(status_code=404, detail="Not found")
     SERVICES.pop(idx)
     return None
+
+@app.put("/services/{service_id}", response_model=ServiceOut)
+def update_service(service_id: int, payload: ServiceIn):
+    # find the item
+    item = next((s for s in SERVICES if s.id == service_id), None)
+    if item is None:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Not found")
+
+    # update fields
+    item.name = payload.name
+    item.category = payload.category
+    item.base_price = payload.base_price
+    item.unit = payload.unit
+    item.is_active = payload.is_active
+    return item
+
+@app.put("/services/{service_id}", response_model=ServiceOut)
+def update_service(service_id: int, payload: ServiceIn):
+    item = next((s for s in SERVICES if s.id == service_id), None)
+    if item is None:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Not found")
+    item.name = payload.name
+    item.category = payload.category
+    item.base_price = payload.base_price
+    item.unit = payload.unit
+    item.is_active = payload.is_active
+    return item
+
